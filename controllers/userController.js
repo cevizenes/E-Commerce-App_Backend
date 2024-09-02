@@ -1,7 +1,6 @@
 import { userModel } from "../models/User.js";
 
 export const registerController = async (req, res) => {
-  console.log(req.body);
   try {
     const { name, email, password, address, city, country, phone } = req.body;
     if (
@@ -15,6 +14,14 @@ export const registerController = async (req, res) => {
     ) {
       return res.status(400).send({
         message: "All fields are required",
+        success: false,
+      });
+    }
+
+    const existingUser = await userModel.findOne({ email: email });
+    if (existingUser) {
+      return res.status(400).send({
+        message: "Email already exists",
         success: false,
       });
     }
@@ -35,6 +42,43 @@ export const registerController = async (req, res) => {
   } catch (error) {
     res.status(400).send({
       message: "User registration failed",
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(500).send({
+        message: "All fields are required",
+        success: false,
+      });
+    }
+    const user = await userModel.findOne({ email: email });
+    if (!user) {
+      return res.status(500).send({
+        message: "Invalid credentials",
+        success: false,
+      });
+    }
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(500).send({
+        message: "Invalid credentials",
+        success: false,
+      });
+    }
+    res.status(200).send({
+      message: "User logged in successfully",
+      success: true,
+      user,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "User login failed",
       success: false,
       error: error.message,
     });
