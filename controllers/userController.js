@@ -71,11 +71,21 @@ export const loginController = async (req, res) => {
         success: false,
       });
     }
-    res.status(200).send({
-      message: "User logged in successfully",
-      success: true,
-      user,
-    });
+    const token = user.generateToken();
+    res
+      .status(200)
+      .cookie("token", token, {
+        expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+        secure: process.env.NODE_ENV === "development" ? true : false,
+        httpOnly: process.env.NODE_ENV === "development" ? true : false,
+        sameSite: process.env.NODE_ENV === "development" ? true : false,
+      })
+      .send({
+        message: "User logged in successfully",
+        success: true,
+        token,
+        user,
+      });
   } catch (error) {
     res.status(500).send({
       message: "User login failed",
