@@ -9,13 +9,13 @@ import connectDB from "./config/db.js";
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
 connectDB();
 
 app.use("/api/v1", testRoutes);
 app.use("/api/v1/user", userRoutes);
 
-app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
 

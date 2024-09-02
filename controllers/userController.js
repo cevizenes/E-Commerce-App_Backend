@@ -1,32 +1,42 @@
 import { userModel } from "../models/User.js";
 
 export const registerController = async (req, res) => {
+  console.log(req.body);
   try {
-    const { name, email, password, address, city, country } = req.body;
-    if (!name || !email || !password || !address || !city || !country) {
-      return res.status(500).send({
+    const { name, email, password, address, city, country, phone } = req.body;
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !address ||
+      !city ||
+      !country ||
+      !phone
+    ) {
+      return res.status(400).send({
+        message: "All fields are required",
         success: false,
-        message: "Please Provide All Fields",
       });
     }
     const user = await userModel.create({
-      name,
-      email,
-      password,
-      address,
-      city,
-      country,
+      name: name,
+      email: email,
+      password: password,
+      address: address,
+      city: city,
+      country: country,
+      phone: phone,
     });
     res.status(201).send({
+      message: "User created successfully",
       success: true,
-      message: "Register is Success",
       user,
     });
   } catch (error) {
-    res.status(500).send({
+    res.status(400).send({
+      message: "User registration failed",
       success: false,
-      message: "Error api",
-      error: `error = ${error}`,
+      error: error.message,
     });
   }
 };
