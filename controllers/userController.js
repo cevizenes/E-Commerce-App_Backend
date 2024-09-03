@@ -58,6 +58,7 @@ export const loginController = async (req, res) => {
       });
     }
     const user = await userModel.findOne({ email: email });
+
     if (!user) {
       return res.status(500).send({
         message: "Invalid credentials",
@@ -65,6 +66,7 @@ export const loginController = async (req, res) => {
       });
     }
     const isMatch = await user.comparePassword(password);
+
     if (!isMatch) {
       return res.status(500).send({
         message: "Invalid credentials",
@@ -89,6 +91,47 @@ export const loginController = async (req, res) => {
   } catch (error) {
     res.status(500).send({
       message: "User login failed",
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const getUserProfileController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    user.password = undefined;
+    res.status(200).send({
+      message: "User profile fetched successfully",
+      success: true,
+      user,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "User profile fetch failed",
+      success: false,
+      error: req.user._id,
+    });
+  }
+};
+
+export const logoutController = async (req, res) => {
+  try {
+    res
+      .status(200)
+      .cookie("token", "", {
+        expires: new Date(Date.now()),
+        secure: process.env.NODE_ENV === "development" ? true : false,
+        httpOnly: process.env.NODE_ENV === "development" ? true : false,
+        sameSite: process.env.NODE_ENV === "development" ? true : false,
+      })
+      .send({
+        message: "User logged out successfully",
+        success: true,
+      });
+  } catch (error) {
+    res.status(500).send({
+      message: "User logout failed",
       success: false,
       error: error.message,
     });
