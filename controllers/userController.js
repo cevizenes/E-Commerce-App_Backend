@@ -137,3 +137,64 @@ export const logoutController = async (req, res) => {
     });
   }
 };
+
+export const updateUserProfileController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    const { name, email, password, address, city, country, phone } = req.body;
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = password;
+    if (address) user.address = address;
+    if (city) user.city = city;
+    if (country) user.country = country;
+    if (phone) user.phone = phone;
+
+    await user.save();
+    res.status(200).send({
+      message: "User profile updated successfully",
+      success: true,
+      user,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "User profile update failed",
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const updateUserPasswordController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    const { oldPassword, newPassword } = req.body;
+
+    if (!newPassword || !oldPassword) {
+      return res.status(500).send({
+        message: "All fields are required",
+        success: false,
+      });
+    }
+    const isMatch = await user.comparePassword(oldPassword);
+
+    if (!isMatch) {
+      return res.status(500).send({
+        message: "Invalid old password",
+        success: false,
+      });
+    }
+    user.password = newPassword;
+    await user.save();
+    res.status(200).send({
+      message: "User password updated successfully",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "User password update failed",
+      success: false,
+      error: error.message,
+    });
+  }
+};
